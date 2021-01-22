@@ -32,7 +32,7 @@
 ## Total Triples
 Total Articles - 2071
 
-Total Triples - 64528
+Total Triples - 70722
 
 # Rough Schema - Olympics and Euroscepticism
 ![Schema](schema_time.JPG)
