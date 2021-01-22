@@ -23,7 +23,7 @@ g.bind("oekg-s", OEKG_S)
 g.bind("so", SO)
 
 
-def add_triples(docs, title_doc, text_doc, link_dict, sent_dict, cnt, topic):
+def add_triples(docs, title_doc, text_doc, link_dict, sent_dict, cnt, emot_no, topic):
     unq_urls = set()
     num_docs = 0
     num_events = 0
@@ -95,26 +95,28 @@ def add_triples(docs, title_doc, text_doc, link_dict, sent_dict, cnt, topic):
                 g.add((OEKG_R.time_euro_article_+str(cnt), SO.mentions, URIRef(OEKG_R)+ent_id)) 
         
         ## Add Sentiment
-        g.add((OEKG_R.time_olymp_article_+str(cnt), ONYX.hasEmotionSet, OEKG_R.emotSet1))  if topic == 'olympics' else \
-            g.add((OEKG_R.time_euro_article_+str(cnt), ONYX.hasEmotionSet, OEKG_R.emotSet1))
-        g.add((OEKG_R.emotSet1, ONYX.hasEmotion, OEKG_R.emot1))
+        g.add((OEKG_R.time_olymp_article_+str(cnt), ONYX.hasEmotionSet, OEKG_R.emotSet+str(emot_no)))  if topic == 'olympics' else \
+            g.add((OEKG_R.time_euro_article_+str(cnt), ONYX.hasEmotionSet, OEKG_R.emotSet+str(emot_no)))
+        g.add((OEKG_R.emotSet+str(emot_no), ONYX.hasEmotion, OEKG_R.emot+str(emot_no)))
         sent_sc = sent_dict[doc_id]
         if sent_sc <= -0.5:
-            g.add((OEKG_R.emot1, ONYX.hasEmotionCategory, WNA.negative_emotion))
+            g.add((OEKG_R.emot+str(emot_no), ONYX.hasEmotionCategory, WNA.negative_emotion))
         elif sent_sc >= 0.5:
-            g.add((OEKG_R.emot1, ONYX.hasEmotionCategory, WNA.positive_emotion))
+            g.add((OEKG_R.emot+str(emot_no), ONYX.hasEmotionCategory, WNA.positive_emotion))
         else:
-            g.add((OEKG_R.emot1, ONYX.hasEmotionCategory, WNA.neutral_emotion))
-        g.add((OEKG_R.emot1, ONYX.hasEmotionIntensity, Literal(sent_sc, datatype=XSD.double)))
+            g.add((OEKG_R.emot+str(emot_no), ONYX.hasEmotionCategory, WNA.neutral_emotion))
+        g.add((OEKG_R.emot+str(emot_no), ONYX.hasEmotionIntensity, Literal(sent_sc, datatype=XSD.double)))
 
         cnt += 1
+        emot_no += 1
         num_docs += 1
 
-    return cnt, num_docs, num_events, num_entities
+    return cnt, emot_no, num_docs, num_events, num_entities
 
 
 ## Add Euroscepticism articles
 cnt = 0
+emot_no = 0
 for site in ['elpais', 'elmundo', 'theguardian', 'dailymail']:
     print(site)
     if site in ['dailymail', 'theguardian', 'bbc', 'telegraph']:
@@ -142,7 +144,7 @@ for site in ['elpais', 'elmundo', 'theguardian', 'dailymail']:
     for i, row in sentiment_csv.iterrows():
         sent_dict['rank_%s'%(row['Rank'])] = row['Title Polarity Score']
 
-    cnt, num_docs, num_events, num_entities = add_triples(docs, title_doc, text_doc, link_dict, sent_dict, cnt, 'euroscepticism')
+    cnt, emot_no, num_docs, num_events, num_entities = add_triples(docs, title_doc, text_doc, link_dict, sent_dict, cnt, emot_no, 'euroscepticism')
 
     print('Number of Articles: %d'%(num_docs))
     print('Number of Events: %d'%(num_events))
@@ -179,7 +181,7 @@ for site in ['bbc', 'telegraph', 'theguardian', 'dailymail', 'estadao', 'folha',
             sent_dict['rank_%s'%(row['Rank'])] = row['Title Polarity Score']
 
 
-        cnt, num_docs, num_events, num_entities = add_triples(docs, title_doc, text_doc, link_dict, sent_dict, cnt, 'olympics')
+        cnt, emot_no, num_docs, num_events, num_entities = add_triples(docs, title_doc, text_doc, link_dict, sent_dict, cnt, emot_no, 'olympics')
 
         print('Number of Articles: %d'%(num_docs))
         print('Number of Events: %d'%(num_events))
