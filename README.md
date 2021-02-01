@@ -37,5 +37,3 @@ Total Triples - 70722
 # Rough Schema - Olympics and Euroscepticism
 ![Schema](schema_time.JPG)
 
-# Todo - Sample Queries and Responses
-
